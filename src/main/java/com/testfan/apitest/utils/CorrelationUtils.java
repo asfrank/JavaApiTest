@@ -35,8 +35,14 @@ public class CorrelationUtils {
             return str;
         }
         Matcher matcher = pattern.matcher(str);
+        String value;
+        if (correlationMap.containsKey(matcher.group(1))) {
+            value = correlationMap.get(matcher.group(1)).toString();
+        }else {
+            value = "";
+        }
         while (matcher.find() && correlationMap.containsKey(matcher.group(1))) {
-            str = str.replace(matcher.group(0), correlationMap.get(matcher.group(1)).toString());
+            str = str.replace(matcher.group(0), value);
         }
         return str;
     }

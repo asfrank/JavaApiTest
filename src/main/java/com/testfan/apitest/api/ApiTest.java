@@ -89,10 +89,9 @@ public class ApiTest {
                 }else {
                     System.out.println("用例未开启");
                 }
-
-                CorrelationUtils.clear();
-                ExcelUtils.getInstance().exportObjects2Excel(results, TestCaseResult.class, path2);
             }
+            CorrelationUtils.clear();
+            ExcelUtils.getInstance().exportObjects2Excel(results, TestCaseResult.class, path2);
 
         } catch (Exception e) {
             e.printStackTrace();
