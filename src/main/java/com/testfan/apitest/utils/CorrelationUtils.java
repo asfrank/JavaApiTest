@@ -6,6 +6,7 @@ import com.testfan.apitest.api.TestCase;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +25,18 @@ public class CorrelationUtils {
         Map<String, Object> map = MapUtils.convertStringToMap(testCase.getCorrelation());
         if (map!=null) {
             for (String key: map.keySet()) {
-                correlationMap.put(key, JSONPath.read(result, String.valueOf(map.get(key))));
+                Object value = JSONPath.read(result, String.valueOf(map.get(key)));
+                // 如果提取到的是多个数据
+                if (value instanceof List) {
+                    int i=0;
+                    List<Object> list = (List<Object>) value;
+                    for (Object item :list) {
+                        correlationMap.put(key+"_g"+(++i), item);
+                    }
+
+                }else {
+                    correlationMap.put(key, JSONPath.read(result, String.valueOf(map.get(key))));
+                }
             }
             map.clear();
         }

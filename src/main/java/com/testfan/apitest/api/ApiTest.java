@@ -77,9 +77,9 @@ public class ApiTest {
                     }
                     System.out.println(result);
                     JsonCheckResult checkResult = CheckPointUtils.check(result, testCase.getCheckpoint());
-                    if (checkResult.isResult()) {
+                    //if (checkResult.isResult()) {
                         CorrelationUtils.addCorrelation(result, testCase);
-                    }
+                    //}
 
                     TestCaseResult testCaseResult = new TestCaseResult();
                     BeanUtils.copyProperties(testCaseResult, testCase);
