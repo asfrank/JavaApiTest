@@ -8,6 +8,7 @@ import com.testfan.apitest.utils.HttpClientUtils;
 import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.File;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,7 +28,7 @@ public class ApiTest {
             args[2] = "-h";
         }
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
-        scheduledThreadPool.scheduleAtFixedRate(ApiTest::testcase, Long.parseLong(args[0]), Long.parseLong(args[1]), getTimeUnit(args[2]));
+        scheduledThreadPool.scheduleAtFixedRate(ApiTest::testcase, getStartTime(args[0], args[2]), Long.parseLong(args[1]), getTimeUnit(args[2]));
     }
 
     private static String getCurrentTime() {
@@ -35,6 +36,42 @@ public class ApiTest {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss");
         String time = format.format(date);
         return time;
+    }
+
+    private static long getStartTime(String startTime, String timeUnit) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss");
+        try {
+            Date date = dateFormat.parse(startTime);
+            long diff = date.getTime() - new Date().getTime();
+            if (diff <= 0) {
+                return 0;
+            }else {
+                return formatDifTime(diff, timeUnit);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // 毫秒转化
+    private static long formatDifTime(long ms, String time) {
+        long ss = 1000;
+        long mi = ss * 60;
+        long hh = mi * 60;
+        long dd = hh * 24;
+        long day = ms / dd;
+        long hour = (ms - day * dd) / hh;
+        long minute = (ms - day * dd - hour * hh) / mi;
+        long second = (ms - day * dd - hour * hh - minute * mi) / ss;
+        if ("-h".equalsIgnoreCase(time)) {
+            return hour;
+        } else if ("-m".equalsIgnoreCase(time)) {
+            return minute;
+        } else if ("-d".equalsIgnoreCase(time)) {
+            return day;
+        }
+        return second;
     }
 
     private static TimeUnit getTimeUnit(String time) {

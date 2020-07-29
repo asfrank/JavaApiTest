@@ -6,6 +6,7 @@ import com.testfan.apitest.api.TestCase;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -13,7 +14,7 @@ import java.util.regex.Pattern;
 
 public class CorrelationUtils {
 
-    private static Map<String, Object> correlationMap = new HashMap<String, Object>();
+    private static Map<String, Object> correlationMap = new LinkedHashMap<>();
 
     private static Pattern pattern = Pattern.compile("\\$\\{(.+?)\\}");
 
