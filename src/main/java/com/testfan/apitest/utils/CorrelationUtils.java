@@ -3,8 +3,11 @@ package com.testfan.apitest.utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONPath;
 import com.testfan.apitest.api.TestCase;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,6 +20,21 @@ public class CorrelationUtils {
     private static Map<String, Object> correlationMap = new LinkedHashMap<>();
 
     private static Pattern pattern = Pattern.compile("\\$\\{(.+?)\\}");
+
+    // 对象属性和值反射到全局map中
+    public static void addCorrelation(Object o) {
+        Class clazz = o.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field: fields) {
+            String name = field.getName();
+            try {
+                String value = BeanUtils.getProperty(o, name);
+                correlationMap.put(name, value);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public static void addCorrelation(String result, TestCase testCase) {
         if (!JSON.isValid(result)) {
