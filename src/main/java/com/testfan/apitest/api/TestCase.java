@@ -29,4 +29,10 @@ public class TestCase {
 
     @ExcelField(title = "关联")
     private String correlation;
+
+    @ExcelField(title = "数据库检查sql")
+    private String dbchecksql;
+
+    @ExcelField(title = "数据库检查点")
+    private String dbcheckpoint;
 }

@@ -60,13 +60,31 @@ public class CorrelationUtils {
         return str;
     }
 
+    private static String getPatternValueInSql(String str) {
+        if (StringUtils.isEmpty(str)) {
+            return str;
+        }
+        Matcher matcher = pattern.matcher(str);
+        String value;
+        if (correlationMap.containsKey(matcher.group(1))) {
+            value = correlationMap.get(matcher.group(1)).toString();
+        }else {
+            value = "";
+        }
+        while (matcher.find() && correlationMap.containsKey(matcher.group(1))) {
+            str = str.replace(matcher.group(0), "'" + value + "'");
+        }
+        return str;
+    }
+
     public static void clear() {
         if(correlationMap!=null) {
             correlationMap.clear();
         }
     }
 
-    public static void replace(TestCase testcase) {
+    // 前置关联替换
+    public static void doBefore_replace(TestCase testcase) {
         //检查url 关联
         testcase.setUrl(getPatternValue(testcase.getUrl()));
 
@@ -75,6 +93,13 @@ public class CorrelationUtils {
 
         //检查替换body 关联
         testcase.setParams(getPatternValue(testcase.getParams()));
+    }
+
+    // 后置关联替换
+    public static void doAfter_replace(TestCase testCase) {
+        testCase.setDbchecksql(getPatternValueInSql(testCase.getDbchecksql()));
+
+        testCase.setDbcheckpoint(getPatternValue(testCase.getDbcheckpoint()));
     }
 
 

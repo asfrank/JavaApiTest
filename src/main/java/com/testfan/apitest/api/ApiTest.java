@@ -4,6 +4,7 @@ import com.github.checkpoint.CheckPointUtils;
 import com.github.checkpoint.JsonCheckResult;
 import com.github.crab2died.ExcelUtils;
 import com.testfan.apitest.utils.CorrelationUtils;
+import com.testfan.apitest.utils.DbCheck;
 import com.testfan.apitest.utils.HttpClientUtils;
 import org.apache.commons.beanutils.BeanUtils;
 
@@ -97,7 +98,7 @@ public class ApiTest {
             for (TestCase testCase: testCases) {
                 if ("是".equals(testCase.getRun())) {
                     // 关联替换
-                    CorrelationUtils.replace(testCase);
+                    CorrelationUtils.doBefore_replace(testCase);
                     System.out.println(testCase);
                     String result = null;
                     if ("get".equalsIgnoreCase(testCase.getType())) {
@@ -118,9 +119,16 @@ public class ApiTest {
                         CorrelationUtils.addCorrelation(result, testCase);
                     //}
 
+                    // 后置关联处理
+                    CorrelationUtils.doAfter_replace(testCase);
+
+                    String dbCheckResult = DbCheck.check(testCase);
+                    System.out.println(testCase);
+
                     TestCaseResult testCaseResult = new TestCaseResult();
                     BeanUtils.copyProperties(testCaseResult, testCase);
                     testCaseResult.setResult(checkResult.getMsg());
+                    testCaseResult.setDbCheckResult(dbCheckResult);
                     results.add(testCaseResult);
 
                 }else {
