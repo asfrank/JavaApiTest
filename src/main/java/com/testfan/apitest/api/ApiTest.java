@@ -14,9 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class ApiTest {
 
@@ -28,8 +26,38 @@ public class ApiTest {
             args[1] = "12";
             args[2] = "-h";
         }
+        //System.out.println("当前启动时间"+getStartTime(args[0],args[2]));
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
-        scheduledThreadPool.scheduleAtFixedRate(ApiTest::testcase, getStartTime(args[0], args[2]), Long.parseLong(args[1]), getTimeUnit(args[2]));
+        Future f=scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                testcase();
+            }
+        }, getStartTime(args[0]), getPeriod(args[1],args[2]), TimeUnit.SECONDS);
+
+        try {
+            //线程池异常问题
+            f.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 任何时间秒转换
+     * @param time
+     * @param unit
+     * @return
+     */
+    private static long getPeriod(String time,String unit) {
+        if ("-h".equalsIgnoreCase(unit)) {
+            return TimeUnit.HOURS.toSeconds(Long.parseLong(time));
+        } else if ("-m".equalsIgnoreCase(unit)) {
+            return TimeUnit.MINUTES.toSeconds(Long.parseLong(time));
+        } else if ("-d".equalsIgnoreCase(unit)) {
+            return TimeUnit.DAYS.toSeconds(Long.parseLong(time));
+        }
+        return Long.parseLong(time);
     }
 
     private static String getCurrentTime() {
@@ -39,52 +67,57 @@ public class ApiTest {
         return time;
     }
 
-    private static long getStartTime(String startTime, String timeUnit) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss");
+    /**
+     * 返回时间差 单位：秒
+     * @param startTime
+     * @return
+     */
+    private static long getStartTime(String startTime) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
         try {
-            Date date = dateFormat.parse(startTime);
-            long diff = date.getTime() - new Date().getTime();
-            if (diff <= 0) {
+            Date date =df.parse(startTime);
+            long dif=date.getTime()-new Date().getTime();
+            if(dif<=0) {
                 return 0;
             }else {
-                return formatDifTime(diff, timeUnit);
+                return dif/1000;
             }
         } catch (ParseException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return 0;
     }
 
-    // 毫秒转化
-    private static long formatDifTime(long ms, String time) {
-        long ss = 1000;
-        long mi = ss * 60;
-        long hh = mi * 60;
-        long dd = hh * 24;
-        long day = ms / dd;
-        long hour = (ms - day * dd) / hh;
-        long minute = (ms - day * dd - hour * hh) / mi;
-        long second = (ms - day * dd - hour * hh - minute * mi) / ss;
-        if ("-h".equalsIgnoreCase(time)) {
-            return hour;
-        } else if ("-m".equalsIgnoreCase(time)) {
-            return minute;
-        } else if ("-d".equalsIgnoreCase(time)) {
-            return day;
-        }
-        return second;
-    }
+//    // 毫秒转化
+//    private static long formatDifTime(long ms, String time) {
+//        long ss = 1000;
+//        long mi = ss * 60;
+//        long hh = mi * 60;
+//        long dd = hh * 24;
+//        long day = ms / dd;
+//        long hour = (ms - day * dd) / hh;
+//        long minute = (ms - day * dd - hour * hh) / mi;
+//        long second = (ms - day * dd - hour * hh - minute * mi) / ss;
+//        if ("-h".equalsIgnoreCase(time)) {
+//            return hour;
+//        } else if ("-m".equalsIgnoreCase(time)) {
+//            return minute;
+//        } else if ("-d".equalsIgnoreCase(time)) {
+//            return day;
+//        }
+//        return second;
+//    }
 
-    private static TimeUnit getTimeUnit(String time) {
-        if ("-h".equalsIgnoreCase(time)) {
-            return TimeUnit.HOURS;
-        } else if ("-m".equalsIgnoreCase(time)) {
-            return TimeUnit.MINUTES;
-        } else if ("-d".equalsIgnoreCase(time)) {
-            return TimeUnit.DAYS;
-        }
-        return TimeUnit.SECONDS;
-    }
+//    private static TimeUnit getTimeUnit(String time) {
+//        if ("-h".equalsIgnoreCase(time)) {
+//            return TimeUnit.HOURS;
+//        } else if ("-m".equalsIgnoreCase(time)) {
+//            return TimeUnit.MINUTES;
+//        } else if ("-d".equalsIgnoreCase(time)) {
+//            return TimeUnit.DAYS;
+//        }
+//        return TimeUnit.SECONDS;
+//    }
 
     private static void testcase() {
         String path = System.getProperty("user.dir") + File.separator + "data" + File.separator + "apitest.xlsx";
