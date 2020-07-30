@@ -3,8 +3,10 @@ package com.testfan.apitest.api;
 import com.github.checkpoint.CheckPointUtils;
 import com.github.checkpoint.JsonCheckResult;
 import com.github.crab2died.ExcelUtils;
+import com.mchange.io.FileUtils;
 import com.testfan.apitest.utils.CorrelationUtils;
 import com.testfan.apitest.utils.DbCheck;
+import com.testfan.apitest.utils.EmailUtils;
 import com.testfan.apitest.utils.HttpClientUtils;
 import org.apache.commons.beanutils.BeanUtils;
 
@@ -170,6 +172,9 @@ public class ApiTest {
             }
             CorrelationUtils.clear();
             ExcelUtils.getInstance().exportObjects2Excel(results, TestCaseResult.class, path2);
+
+            // 发邮件
+            EmailUtils.sendEmailsWithAttachments("测试邮件", "请查收", path2);
 
         } catch (Exception e) {
             e.printStackTrace();
