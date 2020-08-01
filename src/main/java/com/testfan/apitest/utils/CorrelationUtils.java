@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,15 @@ import java.util.regex.Pattern;
 
 public class CorrelationUtils {
 
-    private static Map<String, Object> correlationMap = new LinkedHashMap<>();
+//    private static Map<String, Object> correlationMap = new LinkedHashMap<>();
+
+    // 需要初始化，重写initialValue
+    private static ThreadLocal<Map<String, Object>> correlationMap = new ThreadLocal<Map<String, Object>>() {
+        @Override
+        protected Map<String, Object> initialValue() {
+            return new LinkedHashMap<String, Object>();
+        }
+    };
 
     private static Pattern pattern = Pattern.compile("\\$\\{(.+?)\\}");
 
@@ -29,7 +36,7 @@ public class CorrelationUtils {
             String name = field.getName();
             try {
                 String value = BeanUtils.getProperty(o, name);
-                correlationMap.put(name, value);
+                correlationMap.get().put(name, value);
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 e.printStackTrace();
             }
@@ -50,11 +57,11 @@ public class CorrelationUtils {
                     int i=0;
                     List<Object> list = (List<Object>) value;
                     for (Object item :list) {
-                        correlationMap.put(key+"_g"+(++i), item);
+                        correlationMap.get().put(key+"_g"+(++i), item);
                     }
 
                 }else {
-                    correlationMap.put(key, JSONPath.read(result, String.valueOf(map.get(key))));
+                    correlationMap.get().put(key, JSONPath.read(result, String.valueOf(map.get(key))));
                 }
             }
             map.clear();
@@ -67,12 +74,12 @@ public class CorrelationUtils {
         }
         Matcher matcher = pattern.matcher(str);
         String value;
-        if (correlationMap.containsKey(matcher.group(1))) {
-            value = correlationMap.get(matcher.group(1)).toString();
+        if (correlationMap.get().containsKey(matcher.group(1))) {
+            value = correlationMap.get().get(matcher.group(1)).toString();
         }else {
             value = "";
         }
-        while (matcher.find() && correlationMap.containsKey(matcher.group(1))) {
+        while (matcher.find() && correlationMap.get().containsKey(matcher.group(1))) {
             str = str.replace(matcher.group(0), value);
         }
         return str;
@@ -84,12 +91,12 @@ public class CorrelationUtils {
         }
         Matcher matcher = pattern.matcher(str);
         String value;
-        if (correlationMap.containsKey(matcher.group(1))) {
-            value = correlationMap.get(matcher.group(1)).toString();
+        if (correlationMap.get().containsKey(matcher.group(1))) {
+            value = correlationMap.get().get(matcher.group(1)).toString();
         }else {
             value = "";
         }
-        while (matcher.find() && correlationMap.containsKey(matcher.group(1))) {
+        while (matcher.find() && correlationMap.get().containsKey(matcher.group(1))) {
             str = str.replace(matcher.group(0), "'" + value + "'");
         }
         return str;
@@ -97,7 +104,7 @@ public class CorrelationUtils {
 
     public static void clear() {
         if(correlationMap!=null) {
-            correlationMap.clear();
+            correlationMap.get().clear();
         }
     }
 
